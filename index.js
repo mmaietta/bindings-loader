@@ -41,7 +41,6 @@ module.exports = function(source, map, meta) {
       if (typeof arg === "string") {
         arg = { bindings: arg };
       }
-      const forPath = !!arg.path;
       arg.path = true;
       arg.module_root = arg.module_root
         ? await resolve(arg.module_root)
@@ -54,10 +53,8 @@ module.exports = function(source, map, meta) {
 
       replaceSource.replace(
         match.index,
-        pattern.lastIndex,
-        forPath
-          ? JSON.stringify(addonRequest)
-          : `require(${JSON.stringify(addonRequest)})`,
+        pattern.lastIndex - 1,
+        `(typeof __webpack_require__ === "function" ? __non_webpack_require__ : require)(require(\"path\").join(${!!options.useDirname ? "__dirname" : "require(\"path\").dirname(process.execPath)"}, "${addonRequest}"))`
       );
 
       match = pattern.exec(source);
